@@ -25,7 +25,7 @@ Like most kids, I slowly grew out of LEGO. Nothing changed with LEGO; I was just
 
 The final season of the animated TV show *Star Wars: The Clone Wars* aired during the beginning of the COVID-19 pandemic, and [the ending was nothing short of spectacular](https://www.theringer.com/star-wars/2020/5/4/21247278/clone-wars-finale-star-wars-ahsoka-tano-dave-filoni). Some of the characters from the series were at their peak in popularity, and LEGO capitalized on this opportunity by releasing a 501st battle pack and an AAT featuring Ahsoka Tano and a 332nd clone trooper just a few months after the final episode aired. These sets were so popular among *Star Wars* fans that they were [nearly impossible to get for several months](https://9to5toys.com/2020/09/25/lego-501st-battle-pack-review/). In fact, [LEGO had to impose a limit of one-per-person](https://www.brickfanatics.com/one-per-person-limit-on-lego-star-wars-75280-501st-legion-clone-troopers/) due to the insane demand. 
 
-This frenzy is similar to the [PlayStation 5 release](https://www.cnn.com/2020/11/19/tech/ps5-xbox-series-x-stock-sales/index.html) in that it was/is nearly impossible to get your hands on one. Some very determined [people used bots to purchase a PlayStation 5 whenever it was in stock](https://www.bloomberg.com/news/articles/2020-12-16/playstation-5-scalpers-use-bots-to-hunt-down-scarce-consoles) so that they didn't have to check multiple times a day for an inventory update. I wanted to create something similar for LEGO sets that would check online and in-store inventory for sets I wanted, and I believe I did just that (I didn't want to automatically purchase LEGO sets as I feel that would be unethical).
+This frenzy is similar to the [PlayStation 5 release](https://www.cnn.com/2020/11/19/tech/ps5-xbox-series-x-stock-sales/index.html) in that it was/is nearly impossible to get your hands on one. Some very determined [people used bots to purchase a PlayStation 5 whenever it was in stock](https://www.bloomberg.com/news/articles/2020-12-16/playstation-5-scalpers-use-bots-to-hunt-down-scarce-consoles) so that they didn't have to check multiple times a day for an inventory update. This inspired me to create something similar that would check online and in-store inventory for LEGO sets I wanted, and I believe I was able to do just that (I didn't want to automatically purchase LEGO sets as I feel that would be unethical).
 
 This blog serves as a walkthrough on how to get inventory status data for LEGO sets without visiting LEGO.com.
 
@@ -33,7 +33,7 @@ This blog serves as a walkthrough on how to get inventory status data for LEGO s
 
 ## Import Libraries
 
-Before we begin, we need to import some libraries.
+Every project I work on is assisted by the tools and resources from various libraries, and here are the libraries I use for this one:
 
 ```{r eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
 library(dplyr)
@@ -69,7 +69,7 @@ The vast majority of code in the script is for functions. In this section, I wil
 
 All data from a webpage is stored in some container. Most of these containers have attributes that specify the design and format of the web element. Some of the names for these attributes can be quite lengthy and specific, which can be problematic when trying to maintain a robust script. The `XPathPartialClass` function gives me the option to only provide as much of the attribute name as I want without using the whole name.
 
-For example, one of the class names on the LEGO website is `r color_name("StoreCheckerstyles__StoreSelected-kr3ej5-3 ejSejf")`. Instead of searching all nodes for that string, I can simply enter `r color_name("StoreSelected")` as an argument in the `XPathPartialClass` function. This will get me what I want (assuming `r color_name("StoreSelected")` is a unique string in attribute names) without relying on the seemingly random alphanumeric characters in the class name.
+For example, one of the class names on the LEGO website is `r color_name("StoreCheckerstyles__StoreSelected-kr3ej5-3 ejSejf")`. Instead of searching all nodes for that string, I can simply enter `r color_name("StoreSelected")` as an argument in the `XPathPartialClass` function. This will get me what I want (assuming `r color_name("StoreSelected")` is unique) without relying on the seemingly random alphanumeric characters in the class name.
 
 ```{r eval=FALSE, echo=TRUE}
 XPathPartialClass <- function(name, container = "div", attribute = "class") {
@@ -91,7 +91,7 @@ XPathPartialClass <- function(name, container = "div", attribute = "class") {
 
 ## `ResetPorts`
 
-If a port number is already occupied, the remote driver cannot be created and `MasterScraper` will throw an error. `ResetPorts` frees up the ports to minimize this error.
+This script will throw an error if the remote driver attempts to occupy a port that is already in use. `ResetPorts` frees up the ports to minimize this error.
 
 ```{r eval=FALSE, echo=TRUE}
 ResetPorts <- function() {
@@ -140,7 +140,7 @@ object_json <- extracted_json %>%
   {.$apolloState$data}
 ```
 
-The next several lines retrieve only the pieces of data we want. There is a lot more data in the `object_json` variable, but this is all I would protentially need as a LEGO buyer.
+The next several lines retrieve only the pieces of data I deem necessary. There is a lot more data in the `object_json` variable, but this is all I would theoretically need as a LEGO customer.
 
 ```{r eval=FALSE, echo=TRUE}
 avl_online <- object_json %>% 
@@ -255,9 +255,7 @@ TotalData <- function(link, store_num) {
 
 ## `MasterScraper`
 
-This is the function that retrieves the all the data we need. It creates a remote driver to mimic a physical interaction with LEGO.com without the user doing any work. The only arguments for `MasterScraper` are an array of URLs for each LEGO set, your zip code, and the number of nearest LEGO stores you want to search. All nested functions will be explained as we go through the `MasterScraper` function.
-
-The code below is the shell of the function and the ellipsis acts as a placeholder for the following code chunks.
+This is the function that combines everything I need from LEGO.com into one function. It creates a remote driver to mimic a physical interaction with LEGO.com without the user doing any work. The only arguments for `MasterScraper` are an array of URLs for each LEGO set, my zip code, and the number of nearest LEGO stores I want to search. Note that I have set the default number of nearest stores to three.
 
 ```{r eval=FALSE, echo=TRUE}
 MasterScraper <- function(links, zip_code, store_num=3) {
@@ -271,7 +269,7 @@ The first thing the `MasterScraper` function does is clear any existing instance
 ResetPorts()
 ```
 
-The next step is to initialize and check some varaibles. Along with creating an indexing variable, the number of stores may be corrected if the user inputted a number greater than 5. This is because LEGO.com only shows the 5 closest stores for a given zip code. Also, LEGO stores tend to be so spread out that the fifth-closest store could be over 100 miles away. This function can take a few minutes to run depending on the number of LEGO sets the user is searching for, so a progress bar is nice to have.
+The next step is to initialize and check some varaibles. Along with creating an indexing variable, the number of stores may be corrected if the user inputted a number greater than five. This is because LEGO.com only shows the five closest stores for a given zip code. Also, LEGO stores tend to be so spread out that the fifth-closest store could easily be over 100 miles away. `MasterScraper` may take a few minutes to run depending on the number of LEGO sets the user is searching for, so a progress bar is nice to have.
 
 ```{r eval=FALSE, echo=TRUE}
 link_i <- 1
@@ -279,7 +277,7 @@ if (store_num > 5) {store_num <- 5}
 pb <- txtProgressBar(min=0, max=length(links), style=3)
 ```
 
-The `rsDriver` function creates the remote driver for our scraping needs. The final argument makes the remote driver headless, which means we won't see it running. When debugging, I recommend commenting this out so that you can see how your code is interacting with the browser.
+The `rsDriver` function from `RSelenium` creates the remote driver for our scraping needs. The final argument makes the remote driver headless, which means I won't see it running. When debugging, I recommend commenting the final argument out so that you can see how your code is interacting with the browser.
 
 ```{r eval=FALSE, echo=TRUE}
 rD <- rsDriver(
@@ -291,20 +289,20 @@ rD <- rsDriver(
 remDr <<- rD$client
 ```
 
-Now that the remote driver has been created, we can start retrieving data on our LEGO sets. 
+Now that the remote driver has been created, I can start retrieving data on my LEGO sets. 
 
 ```{r eval=FALSE, echo=TRUE}
 remDr$navigate(links[link_i])
 Sys.sleep(2)
 ```
 
-Upon visiting LEGO.com, a pop-up appears asking the user wants to continue to the shopping website or the play zone. 
+Upon visiting LEGO.com, a pop-up appears asking the if user wants to continue to the shopping website or the play zone. 
 
 <center>
 ![](./demo_popup.PNG){width=75%}
 </center>
 
-The function will click the **Continue** button as well as the **Accept Cookies** button behind the popup to get to the LEGO set webpage.
+These next two lines will click the **Continue** button as well as the **Accept Cookies** button behind the popup to get to the LEGO set webpage.
 
 ```{r eval=FALSE, echo=TRUE}
 remDr$findElement(using = "xpath", '//button[@data-test = "age-gate-grown-up-cta"]')$clickElement()
@@ -313,7 +311,7 @@ remDr$findElement(using = "xpath", '//button[@data-test = "cookie-banner-normal-
 
 ![](./demo_set.PNG)
 
-Now the function will check the LEGO set's inventory status at the nearest LEGO store locations based on the given zip code. I am fortunate to work relatively close to three LEGO stores, so the function will retrieve inventory data from those three locations as well as its online availability using the `TotalData` function.
+This part of the function will check the LEGO set's inventory status at the nearest LEGO store locations based on the given zip code. I am very fortunate to work relatively close to three LEGO stores, so `MasterScraper` will retrieve inventory data from those three locations as well as its online availability using the `TotalData` function.
 
 ```{r eval=FALSE, echo=TRUE}
 remDr$findElement(using = "xpath", XPathPartialClass("stock-accordion", "button", "data-test"))$clickElement()
@@ -331,7 +329,7 @@ setTxtProgressBar(pb, link_i)
 
 ![](./demo_dropdown.PNG)
 
-The function then follows the same process for the remaining LEGO sets.
+If there are multiple LEGO sets, the data retrieval process is repeated for the remaining sets.
 
 ```{r eval=FALSE, echo=TRUE}
 while (link_i < length(links)) {
@@ -348,7 +346,7 @@ while (link_i < length(links)) {
 }
 ```
 
-Now that all the data has been gathered, it is time to close the remote driver. This is very important so that stale instances are not left open over time.
+Now that all of the data has been gathered, it is time to close the remote driver. This is very important so that stale instances are not left open over time.
 
 ```{r eval=FALSE, echo=TRUE}
 remDr$quit()
@@ -369,7 +367,7 @@ Thanks to all of the functions, the rest of the code takes up only a few lines.
 
 ## Data Acquisition
 
-For this code demonstration, I will retrieve inventory data for three LEGO sets. These sets are the very popular [501st battle pack](https://www.lego.com/en-us/product/501st-legion-clone-troopers-75280) from Q3 2020, the new [X-Wing](https://www.lego.com/en-us/product/luke-skywalker-s-x-wing-fighter-75301) from Q1 2021, and the new [TIE Fighter](https://www.lego.com/en-us/product/imperial-tie-fighter-75300) also from Q1 2021. As previously mentioned, the 501st battle pack was a very tough set to get for several months following its release; while the X-Wing and TIE Fighter don't seem to have the same level of demand and fandom as the 501st battle pack, they can still be hard to find in stores. 
+For this code demonstration, I will retrieve inventory data for three LEGO sets. These sets include the very popular [501st battle pack](https://www.lego.com/en-us/product/501st-legion-clone-troopers-75280) from August 2020, the new [X-Wing](https://www.lego.com/en-us/product/luke-skywalker-s-x-wing-fighter-75301) from January 2021, and the new [TIE Fighter](https://www.lego.com/en-us/product/imperial-tie-fighter-75300) also from January 2021. As previously mentioned, the 501st battle pack was a very tough set to get for several months following its release; while the X-Wing and TIE Fighter don't seem to have the same level of demand and fandom as the 501st battle pack, they can still be hard to find in stores. 
 
 Once I add the LEGO set URLs along with my zip code and the number of stores to search for into `MasterScraper`, the function will run and return the product data. 
 
@@ -392,7 +390,7 @@ That's it! I now have inventory status data for the 501st battle pack, the X-Win
 
 ## Data Filtering
 
-Here is a look at the data we have gathered from LEGO.com.
+Here is a look at the data I have gathered from LEGO.com.
 
 ```{r eval=FALSE, echo=TRUE}
 products_df
@@ -420,7 +418,7 @@ products_df %>%
   kableExtra::scroll_box(width = "100%", extra_css = "margin-bottom: 1em;")
 ```
 
-Due to restrictions from the pandemic, some may not want to or be able to go to physical LEGO stores. We can filter this to get all LEGO sets that are in stock online.
+Due to restrictions from the pandemic, some may not want to or be able to go to physical LEGO stores. I can filter this data to get all LEGO sets that are in stock online.
 
 ```{r eval=FALSE, echo=TRUE}
 products_df %>%
@@ -435,10 +433,10 @@ products_df %>%
   kableExtra::scroll_box(width = "100%", extra_css = "margin-bottom: 1em;")
 ```
 
-We can filter the data to get basically any information we want and save it to a csv file. 
+Once I get the desired filtered data, I can save it to a csv file and have a copy of the data.
 
 # Final Thoughts
 
-I hope you found this helpful with whatever you're doing. I recommend automating this script with Task Scheduler (for Windows) so that you really don't have to do any work to check the inventory status of your favorite LEGO sets; at any point in time, you could open the csv file and know which sets are in stock. Going one step further, you can turn this script into some sort of bot to notify you when a LEGO set is in stock. There are certainly more ways to optimize this process, but this code should provide at least a good starting point with regards to data acquisition. 
+I hope you found this helpful with whatever project you're working on. I recommend automating this script with Task Scheduler (on Windows) so that you really don't have to do any work to check the inventory status for your favorite LEGO sets; at any point in time, you could open the csv file and know which sets are in stock. Going one step further, you can turn this script into some sort of bot to notify you when a LEGO set is in stock. There are certainly more ways to optimize this process, but this code should provide at least a good starting point with regards to data acquisition. 
 
-Since I created this script, I have already been able to snag a couple LEGO sets at my local LEGO store. On some occassions, a LEGO set became out of stock within 24 hours of me purchasing it at the store. Now I no longer have to worry about LEGO sets going out of stock or missing out on an opportunity, and I hope you won't have to worry either.
+Since I created this script, I have already been able to snag a couple LEGO sets online and at my local LEGO store. On some occassions, a LEGO set became out of stock within 24 hours of me purchasing it. Now I no longer have to worry about LEGO sets going out of stock or missing out on an opportunity, and I hope you won't have to worry either.
